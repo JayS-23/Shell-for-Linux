@@ -28,6 +28,15 @@ int main(void)
             printf("No Command entered!\n");
             continue;
         }
+        if (strcmp(input, "history")!= 0) {
+            printf("%-6s %-6s %-6s\n", "ID", "PID", "Command");
+            for (int i=0, curr = index-1; i<MAX_History_Length; i++) {
+                printf("%-6d %-6d %-6s\n", i+1, pidArr[curr] , historyArr[curr]);
+                curr = (curr + 9) % MAX_History_Length; // Its basically curr - 1, and then to remove the negative
+                // values and to wrap around I took %10 after adding 10 to it.
+            }
+            continue;
+        }
         historyArr[index] = strdup(input); // strdup() to create a string copy
 
         char* token;
@@ -39,49 +48,38 @@ int main(void)
             args[n] = token;
             n++;
         }
-        // printf("[");
-        // for (int i=0; i<n-1; i++) {
-        //     printf("\"%s\", ", args[i]);
-        // }
-        // printf("\"%s\"]\n", args[n-1]);
-        //
-        // printf("[");
-        // for (int i=0; i<MAX_History_Length-1; i++) {
-        //     printf("\"%s\", ", historyArr[i]);
-        // }
-        // printf("\"%s\"]\n", args[n-1]);
 
-        if (strcmp(args[0], "history") != 0) {
-
-            pid_t pid = fork();
-            if (pid < 0) {
-                printf("Child process creation failed :(\n");
+        pid_t pid = fork();
+        if (pid < 0) {
+            printf("Child process creation failed :(\n");
+            exit(1);
+        }
+        if (pid == 0) {
+            printf("Child process created successfully with PID: %d\n",getpid() );
+            if (execvp(args[0], args) == -1) {
+                printf("Error: %s\n", strerror(errno));
                 exit(1);
-            }
-            if (pid == 0) {
-                printf("Child process created successfully with PID: %d\n",getpid() );
-                if (execvp(args[0], args) == -1) {
-                    printf("Error: %s\n", strerror(errno));
-                    exit(1);
-                }
-            }
-            else {
-                int status;
-                waitpid(pid, &status, 0);
-                pidArr[index] = pid;
-                index = (index + 1) % MAX_History_Length;
             }
         }
         else {
-            printf("%-6s %-6s %-6s\n", "ID", "PID", "Command");
-            for (int i=0, curr = index-1; i<MAX_History_Length; i++) {
-                printf("%-6d %-6d %-6s\n", i+1, pidArr[curr] , historyArr[curr]);
-
-                curr = (curr + 9) % MAX_History_Length; // Its basically curr - 1, and then to remove the negative
-                // values and to wrap around I took %10 after adding 10 to it.
-            }
-            exit(0);
+            int status;
+            waitpid(pid, &status, 0);
+            pidArr[index] = pid;
+            index = (index + 1) % MAX_History_Length;
         }
     }
     return 0;
 }
+
+
+// printf("[");
+// for (int i=0; i<n-1; i++) {
+//     printf("\"%s\", ", args[i]);
+// }
+// printf("\"%s\"]\n", args[n-1]);
+//
+// printf("[");
+// for (int i=0; i<MAX_History_Length-1; i++) {
+//     printf("\"%s\", ", historyArr[i]);
+// }
+// printf("\"%s\"]\n", args[n-1]);

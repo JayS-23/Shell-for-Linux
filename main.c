@@ -28,9 +28,16 @@ int main(void)
             printf("No Command entered!\n");
             continue;
         }
-        if (strcmp(input, "history")!= 0) {
+        if (strcmp(input, "exit")== 0) {
+            should_run = 0;
+            continue;
+        }
+        if (strcmp(input, "history")== 0) {
             printf("%-6s %-6s %-6s\n", "ID", "PID", "Command");
             for (int i=0, curr = index-1; i<MAX_History_Length; i++) {
+                if (historyArr[curr] == NULL) {
+                    break;
+                }
                 printf("%-6d %-6d %-6s\n", i+1, pidArr[curr] , historyArr[curr]);
                 curr = (curr + 9) % MAX_History_Length; // Its basically curr - 1, and then to remove the negative
                 // values and to wrap around I took %10 after adding 10 to it.
@@ -70,16 +77,3 @@ int main(void)
     }
     return 0;
 }
-
-
-// printf("[");
-// for (int i=0; i<n-1; i++) {
-//     printf("\"%s\", ", args[i]);
-// }
-// printf("\"%s\"]\n", args[n-1]);
-//
-// printf("[");
-// for (int i=0; i<MAX_History_Length-1; i++) {
-//     printf("\"%s\", ", historyArr[i]);
-// }
-// printf("\"%s\"]\n", args[n-1]);

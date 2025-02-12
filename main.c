@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,9 +33,11 @@ int main(void)
             should_run = 0;
             continue;
         }
+
         if (strcmp(input, "history")== 0) {
             printf("%-6s %-6s %-6s\n", "ID", "PID", "Command");
-            for (int i=0, curr = index-1; i<MAX_History_Length; i++) {
+            int curr = (index - 1 + MAX_History_Length) % MAX_History_Length;
+            for (int i=0; i<MAX_History_Length; i++) {
                 if (historyArr[curr] == NULL) {
                     break;
                 }
@@ -45,8 +48,9 @@ int main(void)
             }
             continue;
         }
+
         if (strncmp(input, "!!", 2) == 0) {
-            if (input[2] != '\n' || input[2] != '\0') {
+            if (input[2] != '\0') {
                 printf("Error: No such command!\n");
                 continue;
             }
@@ -57,10 +61,25 @@ int main(void)
             }
                 strcpy(input, lastCommand);
         }
-        // if (input[0] == '!' && )
 
+        if (input[0] == '!' && isdigit(input[1])) {
+            int N = atoi(&input[1]);
+            if (N<1 || N>MAX_History_Length) {
+                printf("Error: History limit is set to %d\n", MAX_History_Length);
+                continue;
+            }
+            char *NthCommand = historyArr[((index - 1) - (N - 1) + MAX_History_Length) % MAX_History_Length];
+            if (NthCommand == NULL) {
+                printf("Error: No command found for ID: %d\n", N);
+                continue;
+            }
+            strcpy(input, NthCommand);
+        }
+
+        if (historyArr[index] != NULL) {
+            free(historyArr[index]);
+        }
         historyArr[index] = strdup(input); // strdup() to create a string copy
-
         char* token;
         token = strtok(input, " ");
 
@@ -88,6 +107,13 @@ int main(void)
             waitpid(pid, &status, 0);
             pidArr[index] = pid;
             index = (index + 1) % MAX_History_Length;
+        }
+    }
+
+    // Free all allocated memory before exiting
+    for (int i = 0; i < MAX_History_Length; i++) {
+        if (historyArr[i] != NULL) {
+            free(historyArr[i]);
         }
     }
     return 0;

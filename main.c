@@ -94,6 +94,8 @@ int forkAndExecute(char* args[], pid_t pidArr[], int index) {
             printf("Error: %s\n", strerror(errno));
             exit(1);
         }
+// This line is unreachable, but added to satisfy the compiler.
+        return 0;
     }
     else {
         wait(NULL);
@@ -112,7 +114,6 @@ int main(void)
     int index =0;
 
     while(should_run) {
-        int n = 1;
         printf("CSCI3120>");
         fflush(stdout);
 

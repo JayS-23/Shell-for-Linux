@@ -51,12 +51,12 @@ int main(void)
 
         if (strncmp(input, "!!", 2) == 0) {
             if (input[2] != '\0') {
-                printf("Error: No such command!\n");
+                printf("Error: Invalid command!\n");
                 continue;
             }
             char *lastCommand = historyArr[(index - 1 + MAX_History_Length) % MAX_History_Length];
             if (lastCommand == NULL) {
-                printf("Error: No previous command found!\n");
+                printf("Error: No command in history!\n");
                 continue;
             }
                 strcpy(input, lastCommand);
@@ -65,12 +65,16 @@ int main(void)
         if (input[0] == '!' && isdigit(input[1])) {
             int N = atoi(&input[1]);
             if (N<1 || N>MAX_History_Length) {
-                printf("Error: History limit is set to %d\n", MAX_History_Length);
+                printf("Error: Invalid command!\n");
                 continue;
             }
             char *NthCommand = historyArr[((index - 1) - (N - 1) + MAX_History_Length) % MAX_History_Length];
+            if (historyArr[(index - 1 + MAX_History_Length) % MAX_History_Length] == NULL) {
+                printf("Error: No command in history!\n");
+                continue;
+            }
             if (NthCommand == NULL) {
-                printf("Error: No command found for ID: %d\n", N);
+                printf("Error: Such a command is NOT in history!\n");
                 continue;
             }
             strcpy(input, NthCommand);
@@ -96,7 +100,6 @@ int main(void)
             exit(1);
         }
         if (pid == 0) {
-            printf("Child process created successfully with PID: %d\n",getpid() );
             if (execvp(args[0], args) == -1) {
                 printf("Error: %s\n", strerror(errno));
                 exit(1);
